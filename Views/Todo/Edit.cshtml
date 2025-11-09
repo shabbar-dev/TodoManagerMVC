@@ -1,0 +1,16 @@
+@model TodoMvcNet8_Final.Models.TodoList
+@{
+    Layout = "_Layout";
+}
+<div class="container py-4">
+  <h2>Edit List</h2>
+    <form method="post" action="/Todo/Edit">
+    <input type="hidden" name="id" value="@Model.Id" />
+    <div class="mb-3">
+      <label class="form-label">List Title</label>
+      <input name="title" value="@Model.Title" class="form-control" required />
+    </div>
+    <button class="btn btn-primary">Save</button>
+    <a class="btn btn-secondary" href="/Todo">Cancel</a>
+  </form>
+</div>

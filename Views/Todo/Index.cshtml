@@ -1,0 +1,80 @@
+@model List<TodoMvcNet8_Final.Models.TodoList>
+@{
+    Layout = "_Layout";
+}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3">Todo Lists</h1>
+    <form class="d-flex" method="get" asp-action="Index">
+      <input name="search" value="@(ViewBag.Search ?? "")" class="form-control me-2" placeholder="Search lists or items..."/>
+      <button class="btn borderline">Search</button>
+    </form>
+  </div>
+
+  <div class="mb-3">
+    <a href="/Todo/Create" class="btn btn-primary">Create New CheckList</a>
+  </div>
+
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+    @foreach(var list in Model)
+    {
+      <div class="col">
+                <div class="card">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5 class="card-title text-wrap">@list.Title</h5>
+                                <div class="btn-group gap-2">
+                                <a class="btn btn-sm btn-outline-secondary rounded-2" href="/Todo/Edit/@list.Id">Edit</a>
+                                <a class="btn btn-sm btn-outline-danger rounded-2" href="/Todo/Delete/@list.Id">Delete</a>
+                            </div>
+                        </div>
+
+                        <p class="text-muted">
+                            @(list.Items.Count > 1 ? $"{list.Items.Count} items" : $"{list.Items.Count} item")
+                        </p>
+
+
+                        <ul class="list-group list-group-flush mb-3">
+                            @foreach (var item in list.Items.Take(5))
+
+                            {
+                                     <li class="list-group-item mb-2 rounded-2 @(item.IsCompleted ? "bg-success bg-opacity-25" : "")">
+
+            <div class="d-flex align-items-center w-100">
+
+                <form method="post" action="/Todo/ToggleItem" class="me-2">
+                    <input type="hidden" name="listId" value="@list.Id" />
+                    <input type="hidden" name="itemId" value="@item.Id" />
+                    <button class="btn btn-sm @(item.IsCompleted ? "btn-success" : "btn-outline-primary") rounded-2">
+                                                @(item.IsCompleted ? "☑" : "☐")
+                    </button>
+                </form>
+
+                <!-- ✅ Text area takes remaining space and truncates -->
+                <span class="todo-text flex-grow-1 @(item.IsCompleted ? "text-success fw-semibold" : "")" title="@item.Description">
+                                            @item.Description
+                </span>
+
+                <!-- ✅ Details button always stays aligned -->
+                <a class="btn btn-sm btn-primary rounded-2 ms-3" href="/Todo/Details/@list.Id">Details</a>
+
+            </div>
+
+        </li>
+
+                            }
+                        </ul>
+
+                        <div class="mt-auto">
+                            <form method="post" action="/Todo/AddItems" class="d-flex">
+                                <input type="hidden" name="listId" value="@list.Id" />
+                                <input name="description" class="form-control me-2" placeholder="Add todo..." required />
+                                <button class="btn btn-success" type="submit">Add</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+      </div>
+    }
+  </div>
+</div>
