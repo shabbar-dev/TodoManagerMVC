@@ -6,15 +6,15 @@
   <div class="d-flex justify-content-between">
     <h2>@Model.Title</h2>
     <div>
-      <a class="btn btn-secondary" href="/Todo/Edit/@Model.Id">Edit List</a>
-      <a class="btn btn-danger" href="/Todo/Delete/@Model.Id">Delete List</a>
+      <a class="btn btn-secondary" href="/Todo/Edit/@Model.ListId">Edit List</a>
+      <a class="btn btn-danger" href="/Todo/Delete/@Model.ListId">Delete List</a>
       <a class="btn" href="/Todo">Back</a>
     </div>
   </div>
 
   <div class="mt-3">
         <form method="post" action="/Todo/AddItems" class="d-flex">
-      <input type="hidden" name="listId" value="@Model.Id" />
+      <input type="hidden" name="listId" value="@Model.ListId" />
       <input name="description" class="form-control me-2" placeholder="New todo..." required />
       <button class="btn btn-success">Add</button>
     </form>
@@ -26,7 +26,7 @@
       <li class="list-group-item d-flex justify-content-between align-items-center @(item.IsCompleted?"list-group-item-success":"")">
         <div>
                     <form method="post" action="/Todo/ToggleItem" style="display:inline">
-            <input type="hidden" name="listId" value="@Model.Id" />
+            <input type="hidden" name="listId" value="@Model.ListId" />
             <input type="hidden" name="itemId" value="@item.Id" />
             <button class="btn btn-sm btn-outline-primary">@(item.IsCompleted?"☑":"☐")</button>
           </form>
@@ -35,7 +35,7 @@
         <div class="btn-group gap-2">
               <button class="btn btn-sm btn-outline-secondary rounded-2" data-bs-toggle="modal" data-bs-target="#editItemModal-@item.Id">Edit</button>
                     <form method="post" action="/Todo/DeleteItem" style="display:inline">
-            <input type="hidden" name="listId" value="@Model.Id" />
+            <input type="hidden" name="listId" value="@Model.ListId" />
             <input type="hidden" name="itemId" value="@item.Id" />
             <button class="btn btn-sm btn-danger">Delete</button>
           </form>
@@ -51,7 +51,7 @@
               </div>
                             <form method="post" action="/Todo/EditItem">
                 <div class="modal-body">
-                  <input type="hidden" name="listId" value="@Model.Id" />
+                  <input type="hidden" name="listId" value="@Model.ListId" />
                   <input type="hidden" name="itemId" value="@item.Id" />
                   <input name="title" value="@item.Description" class="form-control" />
                 </div>

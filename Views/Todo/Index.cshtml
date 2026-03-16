@@ -24,8 +24,8 @@
                         <div class="d-flex justify-content-between align-items-start">
                             <h5 class="card-title text-wrap">@list.Title</h5>
                                 <div class="btn-group gap-2">
-                                <a class="btn btn-sm btn-outline-secondary rounded-2" href="/Todo/Edit/@list.Id">Edit</a>
-                                <a class="btn btn-sm btn-outline-danger rounded-2" href="/Todo/Delete/@list.Id">Delete</a>
+                                <a class="btn btn-sm btn-outline-secondary rounded-2" href="/Todo/Edit/@list.ListId">Edit</a>
+                                <a class="btn btn-sm btn-outline-danger rounded-2" href="/Todo/Delete/@list.ListId">Delete</a>
                             </div>
                         </div>
 
@@ -43,7 +43,7 @@
             <div class="d-flex align-items-center w-100">
 
                 <form method="post" action="/Todo/ToggleItem" class="me-2">
-                    <input type="hidden" name="listId" value="@list.Id" />
+                    <input type="hidden" name="listId" value="@list.ListId" />
                     <input type="hidden" name="itemId" value="@item.Id" />
                     <button class="btn btn-sm @(item.IsCompleted ? "btn-success" : "btn-outline-primary") rounded-2">
                                                 @(item.IsCompleted ? "☑" : "☐")
@@ -56,7 +56,7 @@
                 </span>
 
                 <!-- ✅ Details button always stays aligned -->
-                <a class="btn btn-sm btn-primary rounded-2 ms-3" href="/Todo/Details/@list.Id">Details</a>
+                <a class="btn btn-sm btn-primary rounded-2 ms-3" href="/Todo/Details/@list.ListId">Details</a>
 
             </div>
 
@@ -67,7 +67,7 @@
 
                         <div class="mt-auto">
                             <form method="post" action="/Todo/AddItems" class="d-flex">
-                                <input type="hidden" name="listId" value="@list.Id" />
+                                <input type="hidden" name="listId" value="@list.ListId" />
                                 <input name="description" class="form-control me-2" placeholder="Add todo..." required />
                                 <button class="btn btn-success" type="submit">Add</button>
                             </form>

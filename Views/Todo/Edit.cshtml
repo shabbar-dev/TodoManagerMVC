@@ -5,7 +5,7 @@
 <div class="container py-4">
   <h2>Edit List</h2>
     <form method="post" action="/Todo/Edit">
-    <input type="hidden" name="id" value="@Model.Id" />
+    <input type="hidden" name="id" value="@Model.ListId" />
     <div class="mb-3">
       <label class="form-label">List Title</label>
       <input name="title" value="@Model.Title" class="form-control" required />
@@ -14,3 +14,4 @@
     <a class="btn btn-secondary" href="/Todo">Cancel</a>
   </form>
 </div>
+        

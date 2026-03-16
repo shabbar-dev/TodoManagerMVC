@@ -6,7 +6,7 @@
   <h2>Delete List</h2>
   <p>Are you sure you want to delete the list '<strong>@Model.Title</strong>' and all its items?</p>
     <form method="post" action="/Todo/Delete">
-    <input type="hidden" name="id" value="@Model.Id" />
+    <input type="hidden" name="id" value="@Model.ListId" />
     <button class="btn btn-danger">Delete</button>
     <a class="btn btn-secondary" href="/Todo">Cancel</a>
   </form>

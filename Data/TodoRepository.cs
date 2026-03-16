@@ -1,95 +1,111 @@
-using System.Text.Json;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
 using TodoMvcNet8_Final.Models;
-using System.Threading;
 
 namespace TodoMvcNet8_Final.Data;
+
 public class TodoRepository
 {
-    private readonly string _filePath;
-    private readonly JsonSerializerOptions _opts = new() { WriteIndented = true };
-    private readonly SemaphoreSlim _lock = new(1,1);
+    private readonly DynamoDBContext _context;
 
-    public TodoRepository(IWebHostEnvironment env)
+    public TodoRepository(IAmazonDynamoDB dynamoDb)
     {
-        _filePath = Path.Combine(env.ContentRootPath, "Data", "todos.json");
-        Directory.CreateDirectory(Path.GetDirectoryName(_filePath)!);
-        if (!File.Exists(_filePath)) File.WriteAllText(_filePath, "[]");
+        _context = new DynamoDBContext(dynamoDb);
     }
 
-    public async Task<List<TodoList>> GetAllAsync()
+    public async Task<List<TodoList>> GetUserListsAsync(string ownerId)
     {
-        await _lock.WaitAsync();
-        try
+        var query = _context.QueryAsync<TodoList>(ownerId);
+        return await query.GetRemainingAsync();
+    }
+
+    public async Task<TodoList?> GetListByIdAsync(string ownerId, Guid listId)
+    {
+        return await _context.LoadAsync<TodoList>(ownerId, listId.ToString());
+    }
+
+    public async Task CreateListAsync(string ownerId, string title)
+    {
+        var list = new TodoList
         {
-            var txt = await File.ReadAllTextAsync(_filePath);
-            return JsonSerializer.Deserialize<List<TodoList>>(txt) ?? new();
+            OwnerId = ownerId,
+            ListId = Guid.NewGuid().ToString(),
+            Title = title
+        };
+
+        await _context.SaveAsync(list);
+    }
+
+    public async Task UpdateListAsync(string ownerId, Guid listId, string title)
+    {
+        var list = await _context.LoadAsync<TodoList>(ownerId, listId.ToString());
+
+        if (list != null)
+        {
+            list.Title = title;
+            await _context.SaveAsync(list);
         }
-        finally { _lock.Release(); }
     }
 
-    public async Task SaveAllAsync(List<TodoList> lists)
+    public async Task DeleteListAsync(string ownerId, Guid listId)
     {
-        await _lock.WaitAsync();
-        try
+        await _context.DeleteAsync<TodoList>(ownerId, listId.ToString());
+    }
+
+    public async Task AddItemAsync(string ownerId, Guid listId, string description)
+    {
+        var list = await _context.LoadAsync<TodoList>(ownerId, listId.ToString());
+
+        if (list != null)
         {
-            var txt = JsonSerializer.Serialize(lists, _opts);
-            await File.WriteAllTextAsync(_filePath, txt);
-        }
-        finally { _lock.Release(); }
-    }
-
-    public  TodoList GetById(Guid id)
-    {
-        //try
-        //{
-            var txt = File.ReadAllText(_filePath);
-            var response = JsonSerializer.Deserialize<List<TodoList>>(txt)?? new List<TodoList>();
-            return response.First(x => x.Id == id);
-        //}
-        //finally { _lock.Release(); }
-    }
-
-    //public async Task update(TodoList lists)
-    //{
-    //    await _lock.WaitAsync();
-    //    try
-    //    {
-    //        var txt = File.ReadAllText(_filePath);
-    //        var response = JsonSerializer.Deserialize<List<TodoList>>(txt) ?? new List<TodoList>();
-    //        var updateList = response.First(x => x.Id == lists.Id);
-    //        response.Add(updateList);
-    //        txt = JsonSerializer.Serialize(response, _opts);
-    //        await File.WriteAllTextAsync(_filePath, txt);
-    //    }
-    //    finally { _lock.Release(); }
-    //}
-
-
-    public async Task Update(TodoList list)
-    {
-        await _lock.WaitAsync();
-        try
-        {
-            var json = await File.ReadAllTextAsync(_filePath);
-            var items = JsonSerializer.Deserialize<List<TodoList>>(json) ?? new List<TodoList>();
-
-            var index = items.FindIndex(x => x.Id == list.Id);
-            if (index != -1)
+            list.Items.Add(new TodoItem
             {
-                items[index] = list; // ? Replace existing item
-            }
-            else
-            {
-                items.Add(list); // Optionally add if not found
-            }
+                Id = Guid.NewGuid().ToString(),
+                Description = description,
+                IsCompleted = false
+            });
 
-            json = JsonSerializer.Serialize(items, _opts);
-            await File.WriteAllTextAsync(_filePath, json);
-        }
-        finally
-        {
-            _lock.Release();
+            await _context.SaveAsync(list);
         }
     }
 
+    public async Task ToggleItemAsync(string ownerId, Guid listId, Guid itemId)
+    {
+        var list = await _context.LoadAsync<TodoList>(ownerId, listId.ToString());
+
+        var item = list?.Items.FirstOrDefault(i => i.Id == itemId.ToString());
+
+        if (item != null)
+        {
+            item.IsCompleted = !item.IsCompleted;
+            await _context.SaveAsync(list);
+        }
+    }
+
+    public async Task DeleteItemAsync(string ownerId, Guid listId, Guid itemId)
+    {
+        var list = await _context.LoadAsync<TodoList>(ownerId, listId.ToString());
+
+        if (list != null)
+        {
+            list.Items.RemoveAll(i => i.Id == itemId.ToString());
+            await _context.SaveAsync(list);
+        }
+    }
+
+    public async Task EditItemAsync(string ownerId, Guid listId, Guid itemId, string title)
+    {
+        var list = await _context.LoadAsync<TodoList>(ownerId, listId.ToString());
+
+        if (list == null)
+            return;
+
+        var item = list.Items.FirstOrDefault(i => i.Id == itemId.ToString());
+
+        if (item != null)
+        {
+            item.Description = title.Trim();
+            await _context.SaveAsync(list);
+        }
+    }
 }
